@@ -1,9 +1,10 @@
 {
   "name": "output-line",
   "version": "0.0.1",
-  "description": "在node中显示console行号 | Show console line number in node",
+  "description": "执行node程序时，控制台中输出console行号 | When executing a node program, the console outputs the console line number",
   "main": "index.js",
   "scripts": {
+    "test": "node test",
     "lint": "npx eslint . && npx prettier --check .",
     "lint:fix": "npx eslint --fix . && npx prettier --check --write ."
   },

@@ -1,53 +1,58 @@
 const { relative } = require('path')
-const { existsSync } = require('fs')
 
+// backups
+const arr = []
 const _console = (() => {
   let obj = {}
-  for (let key in console) obj[key] = console[key]
+  for (let key in console) {
+    obj[key] = console[key]
+    arr.push(key)
+  }
   return obj
 })()
 
+// Set output style
 function getStyle(name, text) {
-  const objColors = {
+  const obj = {
     green: [32, 39],
     magenta: [35, 39],
     gray: [90, 39]
   }
-  const color = objColors[name]
+  const color = obj[name]
   return `\u001B[${color[0]}m${text}\u001B[${color[1]}m`
 }
 
+// Processing (core code)
 function handler(opt) {
   opt.methods.forEach((methodName) => {
     console[methodName] = (firstArgument, ...otherArguments) => {
-      Error.prepareStackTrace = (_, stack) => stack
-      const stack = new Error().stack
-      let callee = stack[1]
+      try {
+        const error = new Error().stack.match(/at Object.<anonymous>(.*?)+/g)[0]
+        const fullPath = error.match(/\(([^)]*)\)/)[1].replace(/:\d$/, '')
+        const text = fullPath.replace(/(.*?):(\d+)/, function ($0, $1, $2) {
+          // File path
+          const relativeFileName = relative(process.cwd(), $1)
+          let filePath = opt.isRelative ? relativeFileName : $1
+          filePath = getStyle('magenta', filePath)
 
-      const FileName = callee.getFileName()
-      if (!existsSync(FileName)) callee = stack[3]
+          const colon = getStyle('gray', ':')
+          const LineNumber = getStyle('green', $2)
 
-      const relativeFileName = relative(process.cwd(), callee.getFileName())
-      let filePath = opt.isRelative ? relativeFileName : callee.getFileName()
-      filePath = getStyle('magenta', filePath)
+          return `${opt.prefix} ${filePath}${colon}${LineNumber}`
+        })
 
-      const colon = getStyle('gray', ':')
-      const LineNumber = getStyle('green', callee.getLineNumber())
-
-      const text = `${opt.prefix} ${filePath}${colon}${LineNumber}`
-
-      const isString = typeof firstArgument === 'string'
-      if (isString) _console[methodName](text.toString())
-      else _console[methodName](text)
-
-      _console[methodName](firstArgument, ...otherArguments)
+        const isString = typeof firstArgument === 'string'
+        if (isString) _console[methodName](text.toString())
+        else _console[methodName](text)
+        _console[methodName](firstArgument, ...otherArguments)
+      } catch (error) {
+        return
+      }
     }
   })
 }
 
 module.exports = (options) => {
-  let arr = []
-  for (const key in console) arr.push(key)
   const defaultOptions = {
     methods: arr,
     prefix: '🐞',
@@ -56,3 +61,4 @@ module.exports = (options) => {
   const opt = Object.assign(defaultOptions, options)
   handler(opt)
 }
+
