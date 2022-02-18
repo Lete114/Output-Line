@@ -1,0 +1,28 @@
+{
+  "name": "output-line",
+  "version": "0.0.1",
+  "description": "在node中显示console行号 | Show console line number in node",
+  "main": "index.js",
+  "scripts": {
+    "lint": "npx eslint . && npx prettier --check .",
+    "lint:fix": "npx eslint --fix . && npx prettier --check --write ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lete114/Output-Line"
+  },
+  "keywords": [
+    "console",
+    "log",
+    "node",
+    "line",
+    "line",
+    "number"
+  ],
+  "author": "Lete乐特",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.9.0",
+    "prettier": "^2.5.1"
+  }
+}
