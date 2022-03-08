@@ -1,6 +1,6 @@
 {
   "name": "output-line",
-  "version": "0.0.1",
+  "version": "1.0.1",
   "description": "执行node程序时，控制台中输出console行号 | When executing a node program, the console outputs the console line number",
   "main": "index.js",
   "scripts": {

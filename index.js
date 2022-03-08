@@ -24,32 +24,23 @@ function getStyle(name, text) {
 
 // Processing (core code)
 function handler(opt) {
-  opt.methods.forEach((methodName) => {
-    console[methodName] = (firstArgument, ...otherArguments) => {
-      try {
-        const error = new Error().stack.match(/at Object.<anonymous>(.*?)+/g)[0]
-        const fullPath = error.match(/\(([^)]*)\)/)[1].replace(/:\d$/, '')
-        const text = fullPath.replace(/(.*?):(\d+)/, function ($0, $1, $2) {
-          // File path
-          const relativeFileName = relative(process.cwd(), $1)
-          let filePath = opt.isRelative ? relativeFileName : $1
-          filePath = getStyle('magenta', filePath)
+  try {
+    const error = new Error().stack.split(/\r|\n/)[3]
+    const fullPath = error.match(/\(([^)]*)\)/)[1].replace(/:\d*$/, '')
+    return fullPath.replace(/(.*?):(\d+)/, function ($0, $1, $2) {
+      // File path
+      const relativeFileName = relative(process.cwd(), $1)
+      let filePath = opt.isRelative ? relativeFileName : $1
+      filePath = getStyle('magenta', filePath)
 
-          const colon = getStyle('gray', ':')
-          const LineNumber = getStyle('green', $2)
+      const colon = getStyle('gray', ':')
+      const LineNumber = getStyle('green', $2)
 
-          return `${opt.prefix} ${filePath}${colon}${LineNumber}`
-        })
-
-        const isString = typeof firstArgument === 'string'
-        if (isString) _console[methodName](text.toString())
-        else _console[methodName](text)
-        _console[methodName](firstArgument, ...otherArguments)
-      } catch (error) {
-        return
-      }
-    }
-  })
+      return `${opt.prefix} ${filePath}${colon}${LineNumber}`
+    })
+  } catch (error) {
+    return ''
+  }
 }
 
 module.exports = (options) => {
@@ -59,6 +50,9 @@ module.exports = (options) => {
     isRelative: false
   }
   const opt = Object.assign(defaultOptions, options)
-  handler(opt)
+  for (const key in console)
+    console[key] = function () {
+      _console.log(handler(opt))
+      _console[key](...arguments)
+    }
 }
-
